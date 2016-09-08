@@ -1,0 +1,47 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.shishuheng.melody.OnlineFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:gravity="center"
+        android:background="#79a6a6a6"
+        android:id="@+id/linearLayout">
+
+        <EditText
+            android:layout_width="300dp"
+            android:layout_height="30dp"
+            android:inputType="textMultiLine"
+            android:padding="3dp"
+            android:ems="30"
+            android:fadeScrollbars="true"
+            android:background="@drawable/bg_edittext"
+            android:hint="搜索在线音乐"
+            android:textColorHint="#5b39272e"
+            android:id="@+id/editText" />
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="5dp"
+            android:id="@+id/search_button"
+            app:srcCompat="@drawable/search_ico" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="90dp">
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:id="@+id/online_listview">
+        </ListView>
+    </LinearLayout>
+
+    <include layout="@layout/control_bar"></include>
+
+</RelativeLayout>
