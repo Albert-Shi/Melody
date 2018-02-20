@@ -37,9 +37,26 @@ public class MelodyService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String n = intent.getStringExtra(CommandKey.file_key);
-                ProjectFunctions.playMusic(n, player);
-                id++;
-                sendTime();
+                Log.v("SONG_URL", n);
+                isSendPositon = false;
+                try {
+                    player.reset();
+                    player.setDataSource(n);
+                    player.prepareAsync();
+                    player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                        @Override
+                        public void onPrepared(MediaPlayer mediaPlayer) {
+                            mediaPlayer.start();
+                            id++;
+                            sendTime();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+//                ProjectFunctions.playMusic(n, player);
+//                id++;
+//                sendTime();
             }
         };
         registerReceiver(receiver, filter);
@@ -67,6 +84,7 @@ public class MelodyService extends Service {
                 String b = CommandKey.pause_button;
                 if(n.equals(CommandKey.pause_button)) {
                     player.pause();
+                    Log.v("PAUSE_COMMAND", "RUN");
                     isSendPositon = false;
                 }else if (n.equals(CommandKey.play_resume)) {
                     player.start();
@@ -85,7 +103,11 @@ public class MelodyService extends Service {
         Intent intent = new Intent(CommandKey.current_position_filter);
         int[] timeinfo = new int[3];
         timeinfo[0] = player.getCurrentPosition();
-        timeinfo[1] = player.getDuration();
+        if (player.isPlaying()) {
+            timeinfo[1] = player.getDuration();
+        } else {
+            timeinfo[1] = 0;
+        }
         timeinfo[2] = id;
 //        Log.v("CurrentPosition", player.getCurrentPosition() + "");
         intent.putExtra(CommandKey.current_position_key, timeinfo);

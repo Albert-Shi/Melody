@@ -41,8 +41,13 @@ public class MainActivity extends AppCompatActivity
     public PlayFragment pf;
     public OnlineFragment of;
     public Intent serviceintent;
-    public ArrayList<ArrayList> MusicInfos = null;
+    public ArrayList<MusicInfo> MusicInfos = null;
     public int MusicInfos_Position = 0;
+    public int CurrentTime_Lyrics = 0;
+    public int CurrentPosition_Lyrics = 0;
+
+    public ProjectFunctions projectFunctions;
+    public ProjectFunctions.Lyrics lrc;
 
     public void blurBackground(final Bitmap src) {
         final Handler handler  = new Handler() {
@@ -108,6 +113,8 @@ public class MainActivity extends AppCompatActivity
 
         serviceintent = new Intent(this, MelodyService.class);
         startService(serviceintent);
+
+        projectFunctions = new ProjectFunctions();
 
         ArrayList<Fragment> fragments = new ArrayList<>();
         pf = new PlayFragment();

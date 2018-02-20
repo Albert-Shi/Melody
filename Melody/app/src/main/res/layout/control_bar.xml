@@ -12,24 +12,52 @@
         android:orientation="horizontal"
         android:background="#79a6a6a6"
         android:gravity="center_vertical">
-        <ImageView
-            android:id="@+id/control_next"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginRight="10dp"
-            app:srcCompat="@mipmap/next" />
-        <ImageView
-            android:id="@+id/control_play"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginRight="10dp"
-            app:srcCompat="@mipmap/play"/>
-        <ImageView
-            android:id="@+id/control_last"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginRight="10dp"
-            app:srcCompat="@mipmap/last"/>
+
+        <LinearLayout
+            android:layout_width="130dp"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <ImageView
+                android:id="@+id/control_next"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginRight="10dp"
+                app:srcCompat="@mipmap/next" />
+            <ImageView
+                android:id="@+id/control_play"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="10dp"
+                app:srcCompat="@mipmap/play"/>
+            <ImageView
+                android:id="@+id/control_last"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginRight="10dp"
+                app:srcCompat="@mipmap/last"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_vertical"
+            android:layoutDirection="ltr"
+            android:paddingLeft="20dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/control_title"
+                android:text="歌名"
+                android:textColor="#80f2f2f2"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/control_artist_album"
+                android:text="歌手-专辑"
+                android:textColor="#80f2f2f2"
+                android:textSize="10dp"/>
+        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

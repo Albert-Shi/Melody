@@ -11,34 +11,23 @@ import java.util.ArrayList;
 /**
  * Created by 史书恒 on 2016/9/5.
  */
-class KuWoBaseInfoStructure {
-    public static int MUSICID = 0;
-    public static int SONGNAME = 1;
-    public static int ARTIST = 2;
-    public static int ARTISTID = 3;
-    public static int URL = 4;
-}
-
 public class GetMusicFromKuwo {
-    public ArrayList<ArrayList> songInfos = new ArrayList<>();
+    public ArrayList<MusicInfo> songInfos = new ArrayList<>();
     private void dealPrimaryJSON(String json) {
         try {
             JSONObject all = new JSONObject(json);
             JSONArray list = all.getJSONArray("abslist");
             for (int i = 0; i < list.length(); i++) {
-                ArrayList<String> songinfo = new ArrayList<>();
                 JSONObject song = list.getJSONObject(i);
-                songinfo.add(KuWoBaseInfoStructure.MUSICID, song.getString("MUSICRID"));
-                songinfo.add(KuWoBaseInfoStructure.SONGNAME, song.getString("SONGNAME"));
-                songinfo.add(KuWoBaseInfoStructure.ARTIST, song.getString("ARTIST"));
-                songinfo.add(KuWoBaseInfoStructure.ARTISTID, song.getString("ARTISTID"));
+                MusicInfo songinfo = new MusicInfo(song.getString("SONGNAME"), song.getString("ARTIST"), song.getString("ALBUM"), "url");
+                songinfo.setSongId(song.getString("MUSICRID"));
                 songInfos.add(songinfo);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public GetMusicFromKuwo (final String name, final int page, final int pagesize) {
+    public GetMusicFromKuwo (final String name, final String page, final String pagesize) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -55,7 +44,7 @@ public class GetMusicFromKuwo {
                     String result = ProjectFunctions.inputStreamToString(is);
                     dealPrimaryJSON(result);
                     for (int i = 0; i < songInfos.size(); i++) {
-                        String server = "http://antiserver.kuwo.cn/anti.s?type=convert_url&format=aac|mp3&response=url&rid=" + songInfos.get(i).get(KuWoBaseInfoStructure.MUSICID);
+                        String server = "http://antiserver.kuwo.cn/anti.s?type=convert_url&format=aac|mp3&response=url&rid=" + songInfos.get(i).getSongId();
                         URL geturl = new URL(server);
                         HttpURLConnection urlconn = (HttpURLConnection) geturl.openConnection();
                         urlconn.setDoInput(true);
@@ -65,7 +54,7 @@ public class GetMusicFromKuwo {
                         urlconn.connect();
                         InputStream istream = urlconn.getInputStream();
                         String urlresult = ProjectFunctions.inputStreamToString(istream);
-                        songInfos.get(i).add(KuWoBaseInfoStructure.URL, urlresult);
+                        songInfos.get(i).setUrl(urlresult);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

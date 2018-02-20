@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 public class PlayFragment extends Fragment {
     public static View view;
     public LinearLayout album_show;
+    public LinearLayout time_label;
     public boolean isPlay = false;
     public ImageView play_button;
     public ImageView last_button;
@@ -51,6 +53,10 @@ public class PlayFragment extends Fragment {
     public TextView album;
 
     public int id = 0;
+
+    public static int defaultFontColor = Color.argb(255, 255, 255, 255);
+
+    public boolean isShowLyricsPad = false;
 
 //    public Thread backgroundShow;
 
@@ -77,6 +83,14 @@ public class PlayFragment extends Fragment {
         title = new TextView(getContext());
         artist = new TextView(getContext());
         album = new TextView(getContext());
+
+        bt.setTextColor(defaultFontColor);
+        et.setTextColor(defaultFontColor);
+        lyric.setTextColor(defaultFontColor);
+        title.setTextColor(defaultFontColor);
+        artist.setTextColor(defaultFontColor);
+        album.setTextColor(defaultFontColor);
+
         createLayout(album_show, seekBar, bt, et, lyric, title, artist, album);
 //        Bitmap originBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.mass);
 //        changeBackground(originBitmap, album_show);
@@ -113,6 +127,21 @@ public class PlayFragment extends Fragment {
 
             }
         });
+
+        lyric.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                LyricsFragment lyricsFragment = new LyricsFragment();
+                if (isShowLyricsPad == false) {
+                    isShowLyricsPad = true;
+                    getFragmentManager().beginTransaction().replace(R.id.play_layout, lyricsFragment).addToBackStack(null).commit();
+                }else {
+                    Parent.getSupportFragmentManager().popBackStack();
+                    isShowLyricsPad = false;
+                }
+            }
+        });
+
         next_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -136,32 +165,34 @@ public class PlayFragment extends Fragment {
         float scale = dm.density;
         album_show.setLayoutParams(new ViewGroup.LayoutParams(dm.widthPixels, dm.widthPixels));
         layout.addView(album_show);
-        LinearLayout time_label = new LinearLayout(getContext());
+        time_label = new LinearLayout(getContext());
         time_label.setOrientation(LinearLayout.HORIZONTAL);
-        bt.setText("0:0");
-        et.setText("0.0");
+        bt.setText("0:00");
+        et.setText("0.00");
         int h = (int)(3*scale);
         LinearLayout begin = new LinearLayout(getContext());
         LinearLayout end = new LinearLayout(getContext());
-        lyric.setText("这是将会放上一行歌词");
+        lyric.setText("此处显示歌词");
         begin.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
         end.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        begin.setLayoutParams(new ViewGroup.LayoutParams(dm.widthPixels/8, 8*h));
-        end.setLayoutParams(new ViewGroup.LayoutParams(dm.widthPixels/8, 8*h));
-        lyric.setLayoutParams(new ViewGroup.LayoutParams(dm.widthPixels/4*3, 8*h));
-        lyric.setGravity(Gravity.CENTER);
+        begin.setLayoutParams(new ViewGroup.LayoutParams(dm.widthPixels/8, 16*h));
+        end.setLayoutParams(new ViewGroup.LayoutParams(dm.widthPixels/8, 16*h));
+        lyric.setLayoutParams(new ViewGroup.LayoutParams(dm.widthPixels/4*3, 16*h));
+        lyric.setGravity(Gravity.CENTER_HORIZONTAL);
         time_label.addView(begin);
         time_label.addView(lyric);
         time_label.addView(end);
         begin.addView(bt);
         end.addView(et);
         seekBar.setMax(0);
-        layout.addView(seekBar);
+
         layout.addView(time_label);
+        layout.addView(seekBar);
+
         title.setGravity(Gravity.CENTER);
         artist.setGravity(Gravity.CENTER);
         album.setGravity(Gravity.CENTER);
-        title.setTextSize(32f);
+        title.setTextSize(22f);
         artist.setTextSize(16f);
         album.setTextSize(16f);
 
@@ -204,15 +235,32 @@ public class PlayFragment extends Fragment {
                     seekBar.setMax(time[1]);
                     int m = time[1] / 60000;
                     int s = (time[1] / 1000) - (m*60);
-                    et.setText(m + ":" + s);
+                    if (s < 10) {
+                        et.setText(m + ":0" + s);
+                    } else {
+                        et.setText(m + ":" + s);
+                    }
                 }
-//                if ((time[1] - time[0] < 1000)|| time[2] == id)
-//                    Parent.pf.nextButton_action();
+                if ((time[1] - time[0] < 500) && (time[0] > 500) && time[1] != 0)
+                    Parent.pf.nextButton_action();
                 int cm = time[0] / 60000;
                 int cs = (time[0] / 1000) - (cm*60);
                 id = time[2];
-                bt.setText(cm + ":" + cs);
+                if (cs < 10) {
+                    bt.setText(cm + ":0" + cs);
+                } else {
+                    bt.setText(cm + ":" + cs);
+                }
+                Parent.CurrentTime_Lyrics = time[0];
                 seekBar.setProgress(time[0]);
+                if (Parent.lrc != null) {
+                    String thisLine = Parent.lrc.getCurrentLine(time[0], Parent);
+                    if (isShowLyricsPad == false) {
+                        lyric.setText(thisLine);
+                    } else {
+                        lyric.setText("关闭歌词面板");
+                    }
+                }
             }
         };
         IntentFilter filter = new IntentFilter(CommandKey.current_position_filter);
@@ -226,14 +274,23 @@ public class PlayFragment extends Fragment {
             if (Parent.MusicInfos_Position < 0)
                 Parent.MusicInfos_Position = 0;
 
-            String file = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).get(CommandKey.SongsInfoStructure.song_url);
-            String ttitle = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).get(CommandKey.SongsInfoStructure.song_name);
-            String tartist = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).get(CommandKey.SongsInfoStructure.artist);
-            String talbum = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).get(CommandKey.SongsInfoStructure.album_name);
+            String file = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).getUrl();
+            String ttitle = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).getSongName();
+            String tartist = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).getArtist();
+            String talbum = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).getAlbumName();
             ProjectFunctions.sendPlayBroadcast(file, getActivity());
             title.setText(ttitle);
             artist.setText(tartist);
             album.setText(talbum);
+            Parent.of.control_title.setText(ttitle);
+            Parent.of.control_artist_album.setText(tartist + "-" + talbum);
+
+            play_button.setImageResource(R.mipmap.pause);
+            Parent.of.control_play.setImageResource(R.mipmap.pause);
+            isPlay = true;
+
+            Parent.pf.lyric.setText("此处显示歌词");
+            GetMusicFromNetease.getLyrics(Parent.MusicInfos.get(Parent.MusicInfos_Position), Parent.MusicInfos.get(Parent.MusicInfos_Position).getSongId());
             ProjectFunctions.createThread(Parent);
         }
     }
@@ -245,14 +302,23 @@ public class PlayFragment extends Fragment {
             if (Parent.MusicInfos_Position == Parent.MusicInfos.size())
                 Parent.MusicInfos_Position--;
 
-            String file = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).get(CommandKey.SongsInfoStructure.song_url);
-            String ttitle = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).get(CommandKey.SongsInfoStructure.song_name);
-            String tartist = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).get(CommandKey.SongsInfoStructure.artist);
-            String talbum = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).get(CommandKey.SongsInfoStructure.album_name);
+            String file = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).getUrl();
+            String ttitle = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).getSongName();
+            String tartist = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).getArtist();
+            String talbum = (String) Parent.MusicInfos.get(Parent.MusicInfos_Position).getAlbumName();
             ProjectFunctions.sendPlayBroadcast(file, getActivity());
             title.setText(ttitle);
             artist.setText(tartist);
             album.setText(talbum);
+            Parent.of.control_title.setText(ttitle);
+            Parent.of.control_artist_album.setText(tartist + "-" + talbum);
+
+            play_button.setImageResource(R.mipmap.pause);
+            Parent.of.control_play.setImageResource(R.mipmap.pause);
+            isPlay = true;
+
+            Parent.pf.lyric.setText("此处显示歌词");
+            GetMusicFromNetease.getLyrics(Parent.MusicInfos.get(Parent.MusicInfos_Position), Parent.MusicInfos.get(Parent.MusicInfos_Position).getSongId());
             ProjectFunctions.createThread(Parent);
         }
     }
